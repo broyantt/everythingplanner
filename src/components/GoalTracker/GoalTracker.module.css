@@ -285,3 +285,46 @@
   background-color: rgba(155, 183, 159, 0.18);
   border-color: rgba(155, 183, 159, 0.45);
 }
+
+.subgoalList {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: space-between;
+  margin-top: 10px;
+  gap: 10px;
+  margin-left: 20px;
+}
+
+.subgoalRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.subgoalLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 70%;
+}
+
+.subgoalLetter {
+  color: rgb(var(--color-foreground));
+  opacity: 0.7;
+}
+
+.checkboxTodo {
+  accent-color: #8ba888;
+  cursor: pointer;
+}
+
+.completedSubgoal {
+  color: rgb(var(--color-muted));
+  opacity: 0.6;
+  transition: all 0.5s ease;
+}
+
+.unfinishedSubgoal {
+  transition: all 0.5s ease;
+}

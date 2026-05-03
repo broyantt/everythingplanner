@@ -19,7 +19,7 @@ export interface Goal {
 export interface SubGoal {
   id: string;
   title: string;
-  progress: "not_started" | "in_progress" | "completed";
+  done: boolean;
 }
 
 export default function GoalTracker() {
@@ -104,10 +104,39 @@ export default function GoalTracker() {
       {
         id: `subgoal-${Date.now()}`,
         title: "",
-        progress: "not_started" as SubGoal["progress"],
+        done: false,
       },
     ];
     setAllSubGoals(updatedSubGoals);
+  }
+
+  function handleCheckSubgoal(currGoal: Goal, indexTwo: number, e) {
+    let updatedGoals = {};
+    const updatedYearlyGoals = allGoals[year].map((goal) => {
+      if (goal.id === currGoal.id) {
+        const updatedSubGoals = goal.subgoals.map((subgoal, id) => {
+          if (id === indexTwo) {
+            return {
+              ...subgoal,
+              done: !subgoal.done,
+            };
+          } else {
+            return subgoal;
+          }
+        });
+        return {
+          ...goal,
+          subgoals: updatedSubGoals,
+        };
+      } else {
+        return goal;
+      }
+    });
+    updatedGoals = {
+      ...allGoals,
+      [year]: updatedYearlyGoals,
+    };
+    setAllGoals(updatedGoals);
   }
 
   function handleSubGoalChange(
@@ -135,6 +164,7 @@ export default function GoalTracker() {
       const updatedYearlyGoals = allGoals[year].map((goal) => {
         if (goal.id === selectedGoal.id) {
           return {
+            ...goal,
             title: goalTitle,
             category: goalCategory as Goal["category"],
             progress: goalProgress,
@@ -217,31 +247,72 @@ export default function GoalTracker() {
               itemKey="1"
             >
               {yearlyWorkGoals.length > 0 ? (
-                <ol className={styles.goalList}>
-                  {yearlyWorkGoals.map((goal, index) => {
-                    return (
-                      <li
-                        className={`${goal.progress === "not_started" ? styles.goalNotStarted : goal.progress === "in_progress" ? styles.goalInProgress : styles.goalCompleted}`}
-                        onClick={() => {
-                          handleSelectGoal(goal);
-                        }}
-                        key={goal.id}
-                      >
-                        <div className={styles.goalRows}>
-                          <div className={styles.goalLeft}>
-                            <span className={styles.goalNumber}>
-                              {index + 1}.
-                            </span>
-                            <span>{goal.title}</span>
-                          </div>
-                          <span
-                            className={`${styles.statusDot} ${goal.progress === "not_started" ? styles.notStarted : goal.progress === "in_progress" ? styles.inProgress : styles.completed}`}
-                          />
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ol>
+                <>
+                  <ol className={styles.goalList}>
+                    {yearlyWorkGoals.map((goal, index) => {
+                      return (
+                        <>
+                          <li
+                            className={`${goal.progress === "not_started" ? styles.goalNotStarted : goal.progress === "in_progress" ? styles.goalInProgress : styles.goalCompleted}`}
+                            onClick={() => {
+                              handleSelectGoal(goal);
+                            }}
+                            key={goal.id}
+                          >
+                            <div className={styles.goalRows}>
+                              <div className={styles.goalLeft}>
+                                <span className={styles.goalNumber}>
+                                  {index + 1}.
+                                </span>
+                                <span>{goal.title}</span>
+                              </div>
+                              <span
+                                className={`${styles.statusDot} ${goal.progress === "not_started" ? styles.notStarted : goal.progress === "in_progress" ? styles.inProgress : styles.completed}`}
+                              />
+                            </div>
+                            <div className={styles.subgoalList}>
+                              {goal.subgoals.map((subgoal, indexTwo) => {
+                                return (
+                                  <div
+                                    key={subgoal.id}
+                                    className={styles.subgoalRow}
+                                  >
+                                    <div className={styles.subgoalLeft}>
+                                      <span className={styles.subgoalLetter}>
+                                        {String.fromCharCode(97 + indexTwo)}
+                                        {")"}
+                                      </span>
+                                      <span
+                                        className={
+                                          subgoal.done
+                                            ? styles.completedSubgoal
+                                            : styles.unfinishedSubgoal
+                                        }
+                                      >
+                                        {subgoal.title}
+                                      </span>
+                                    </div>
+                                    <input
+                                      className={styles.checkboxTodo}
+                                      type="checkbox"
+                                      checked={subgoal.done}
+                                      onChange={(e) => {
+                                        handleCheckSubgoal(goal, indexTwo, e);
+                                      }}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                      }}
+                                    />
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </li>
+                        </>
+                      );
+                    })}
+                  </ol>
+                </>
               ) : (
                 <div className={styles.noGoalsAdded}>No goals added yet.</div>
               )}
@@ -252,93 +323,216 @@ export default function GoalTracker() {
               itemKey="2"
             >
               {yearlyFitnessGoals.length > 0 ? (
-                <ol className={styles.goalList}>
-                  {yearlyFitnessGoals.map((goal, index) => {
-                    return (
-                      <li
-                        className={`${goal.progress === "not_started" ? styles.goalNotStarted : goal.progress === "in_progress" ? styles.goalInProgress : styles.goalCompleted}`}
-                        onClick={() => {
-                          handleSelectGoal(goal);
-                        }}
-                        key={goal.id}
-                      >
-                        <div className={styles.goalRows}>
-                          <div className={styles.goalLeft}>
-                            <span className={styles.goalNumber}>
-                              {index + 1}.
-                            </span>
-                            <span>{goal.title}</span>
-                          </div>
-                          <span
-                            className={`${styles.statusDot} ${goal.progress === "not_started" ? styles.notStarted : goal.progress === "in_progress" ? styles.inProgress : styles.completed}`}
-                          />
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ol>
+                <>
+                  <ol className={styles.goalList}>
+                    {yearlyFitnessGoals.map((goal, index) => {
+                      return (
+                        <>
+                          <li
+                            className={`${goal.progress === "not_started" ? styles.goalNotStarted : goal.progress === "in_progress" ? styles.goalInProgress : styles.goalCompleted}`}
+                            onClick={() => {
+                              handleSelectGoal(goal);
+                            }}
+                            key={goal.id}
+                          >
+                            <div className={styles.goalRows}>
+                              <div className={styles.goalLeft}>
+                                <span className={styles.goalNumber}>
+                                  {index + 1}.
+                                </span>
+                                <span>{goal.title}</span>
+                              </div>
+                              <span
+                                className={`${styles.statusDot} ${goal.progress === "not_started" ? styles.notStarted : goal.progress === "in_progress" ? styles.inProgress : styles.completed}`}
+                              />
+                            </div>
+                            <div className={styles.subgoalList}>
+                              {goal.subgoals.map((subgoal, indexTwo) => {
+                                return (
+                                  <div
+                                    key={subgoal.id}
+                                    className={styles.subgoalRow}
+                                  >
+                                    <div className={styles.subgoalLeft}>
+                                      <span className={styles.subgoalLetter}>
+                                        {String.fromCharCode(97 + indexTwo)}
+                                        {")"}
+                                      </span>
+                                      <span
+                                        className={
+                                          subgoal.done
+                                            ? styles.completedSubgoal
+                                            : styles.unfinishedSubgoal
+                                        }
+                                      >
+                                        {subgoal.title}
+                                      </span>
+                                    </div>
+                                    <input
+                                      className={styles.checkboxTodo}
+                                      type="checkbox"
+                                      checked={subgoal.done}
+                                      onChange={(e) => {
+                                        handleCheckSubgoal(goal, indexTwo, e);
+                                      }}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                      }}
+                                    />
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </li>
+                        </>
+                      );
+                    })}
+                  </ol>
+                </>
               ) : (
                 <div className={styles.noGoalsAdded}>No goals added yet.</div>
               )}
             </TabPane>
             <TabPane className={styles.tabText} tab={<LuBrain />} itemKey="3">
               {yearlyLearningGoals.length > 0 ? (
-                <ol className={styles.goalList}>
-                  {yearlyLearningGoals.map((goal, index) => {
-                    return (
-                      <li
-                        className={`${goal.progress === "not_started" ? styles.goalNotStarted : goal.progress === "in_progress" ? styles.goalInProgress : styles.goalCompleted}`}
-                        onClick={() => {
-                          handleSelectGoal(goal);
-                        }}
-                        key={goal.id}
-                      >
-                        <div className={styles.goalRows}>
-                          <div className={styles.goalLeft}>
-                            <span className={styles.goalNumber}>
-                              {index + 1}.
-                            </span>
-                            <span>{goal.title}</span>
-                          </div>
-                          <span
-                            className={`${styles.statusDot} ${goal.progress === "not_started" ? styles.notStarted : goal.progress === "in_progress" ? styles.inProgress : styles.completed}`}
-                          />
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ol>
+                <>
+                  <ol className={styles.goalList}>
+                    {yearlyLearningGoals.map((goal, index) => {
+                      return (
+                        <>
+                          <li
+                            className={`${goal.progress === "not_started" ? styles.goalNotStarted : goal.progress === "in_progress" ? styles.goalInProgress : styles.goalCompleted}`}
+                            onClick={() => {
+                              handleSelectGoal(goal);
+                            }}
+                            key={goal.id}
+                          >
+                            <div className={styles.goalRows}>
+                              <div className={styles.goalLeft}>
+                                <span className={styles.goalNumber}>
+                                  {index + 1}.
+                                </span>
+                                <span>{goal.title}</span>
+                              </div>
+                              <span
+                                className={`${styles.statusDot} ${goal.progress === "not_started" ? styles.notStarted : goal.progress === "in_progress" ? styles.inProgress : styles.completed}`}
+                              />
+                            </div>
+                            <div className={styles.subgoalList}>
+                              {goal.subgoals.map((subgoal, indexTwo) => {
+                                return (
+                                  <div
+                                    key={subgoal.id}
+                                    className={styles.subgoalRow}
+                                  >
+                                    <div className={styles.subgoalLeft}>
+                                      <span className={styles.subgoalLetter}>
+                                        {String.fromCharCode(97 + indexTwo)}
+                                        {")"}
+                                      </span>
+                                      <span
+                                        className={
+                                          subgoal.done
+                                            ? styles.completedSubgoal
+                                            : styles.unfinishedSubgoal
+                                        }
+                                      >
+                                        {subgoal.title}
+                                      </span>
+                                    </div>
+                                    <input
+                                      className={styles.checkboxTodo}
+                                      type="checkbox"
+                                      checked={subgoal.done}
+                                      onChange={(e) => {
+                                        handleCheckSubgoal(goal, indexTwo, e);
+                                      }}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                      }}
+                                    />
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </li>
+                        </>
+                      );
+                    })}
+                  </ol>
+                </>
               ) : (
                 <div className={styles.noGoalsAdded}>No goals added yet.</div>
               )}
             </TabPane>
             <TabPane className={styles.tabText} tab={<CgProfile />} itemKey="4">
               {yearlyPersonalGoals.length > 0 ? (
-                <ol className={styles.goalList}>
-                  {yearlyPersonalGoals.map((goal, index) => {
-                    return (
-                      <li
-                        className={`${goal.progress === "not_started" ? styles.goalNotStarted : goal.progress === "in_progress" ? styles.goalInProgress : styles.goalCompleted}`}
-                        onClick={() => {
-                          handleSelectGoal(goal);
-                        }}
-                        key={goal.id}
-                      >
-                        <div className={styles.goalRows}>
-                          <div className={styles.goalLeft}>
-                            <span className={styles.goalNumber}>
-                              {index + 1}.
-                            </span>
-                            <span>{goal.title}</span>
-                          </div>
-                          <span
-                            className={`${styles.statusDot} ${goal.progress === "not_started" ? styles.notStarted : goal.progress === "in_progress" ? styles.inProgress : styles.completed}`}
-                          />
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ol>
+                <>
+                  <ol className={styles.goalList}>
+                    {yearlyPersonalGoals.map((goal, index) => {
+                      return (
+                        <>
+                          <li
+                            className={`${goal.progress === "not_started" ? styles.goalNotStarted : goal.progress === "in_progress" ? styles.goalInProgress : styles.goalCompleted}`}
+                            onClick={() => {
+                              handleSelectGoal(goal);
+                            }}
+                            key={goal.id}
+                          >
+                            <div className={styles.goalRows}>
+                              <div className={styles.goalLeft}>
+                                <span className={styles.goalNumber}>
+                                  {index + 1}.
+                                </span>
+                                <span>{goal.title}</span>
+                              </div>
+                              <span
+                                className={`${styles.statusDot} ${goal.progress === "not_started" ? styles.notStarted : goal.progress === "in_progress" ? styles.inProgress : styles.completed}`}
+                              />
+                            </div>
+                            <div className={styles.subgoalList}>
+                              {goal.subgoals.map((subgoal, indexTwo) => {
+                                return (
+                                  <div
+                                    key={subgoal.id}
+                                    className={styles.subgoalRow}
+                                  >
+                                    <div className={styles.subgoalLeft}>
+                                      <span className={styles.subgoalLetter}>
+                                        {String.fromCharCode(97 + indexTwo)}
+                                        {")"}
+                                      </span>
+                                      <span
+                                        className={
+                                          subgoal.done
+                                            ? styles.completedSubgoal
+                                            : styles.unfinishedSubgoal
+                                        }
+                                      >
+                                        {subgoal.title}
+                                      </span>
+                                    </div>
+                                    <input
+                                      className={styles.checkboxTodo}
+                                      type="checkbox"
+                                      checked={subgoal.done}
+                                      onChange={(e) => {
+                                        handleCheckSubgoal(goal, indexTwo, e);
+                                      }}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                      }}
+                                    />
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </li>
+                        </>
+                      );
+                    })}
+                  </ol>
+                </>
               ) : (
                 <div className={styles.noGoalsAdded}>No goals added yet.</div>
               )}
