@@ -1,5 +1,5 @@
 import styles from "./TodoCard.module.css";
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 import type { Todo } from "../../App";
 import { FaRegTrashAlt } from "react-icons/fa";
 
@@ -21,11 +21,11 @@ export default function TodoCard({
   const [edittingIndex, setEdittingIndex] = useState<number>();
   const [todoInput, setTodoInput] = useState("");
 
-  function handleInputChange(e) {
+  function handleInputChange(e: ChangeEvent<HTMLInputElement>) {
     setInputText(e.target.value);
   }
 
-  function handleTodoInputChange(e) {
+  function handleTodoInputChange(e: ChangeEvent<HTMLInputElement>) {
     setTodoInput(e.target.value);
   }
 
