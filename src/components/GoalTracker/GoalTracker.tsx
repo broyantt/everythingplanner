@@ -299,85 +299,153 @@ export default function GoalTracker() {
             className={styles.modal}
           >
             <form onSubmit={handleSubmit} className={styles.modalForm}>
-              <input
-                value={goalTitle}
-                onChange={(e) => {
-                  setGoalTitle(e.target.value);
-                }}
-                className={styles.goalInput}
-                type="text"
-                placeholder="enter goal"
-              />
-              <div className={styles.goalSelectRow}>
-                <select
-                  value={goalCategory}
+              <div className={styles.field}>
+                <input
+                  value={goalTitle}
                   onChange={(e) => {
-                    setGoalCategory(e.target.value);
+                    setGoalTitle(e.target.value);
                   }}
-                  className={styles.goalSelect}
-                >
-                  <option value="Work">work</option>
-                  <option value="Fitness">fitness</option>
-                  <option value="Learning">learning</option>
-                  <option value="Personal">personal</option>
-                </select>
-                <select
-                  value={goalProgress}
-                  onChange={(e) => {
-                    setGoalProgress(e.target.value);
-                  }}
-                  className={styles.goalSelect}
-                >
-                  <option value="not_started">not started</option>
-                  <option value="in_progress">in progress</option>
-                  <option value="completed">completed</option>
-                </select>
+                  className={styles.goalInput}
+                  type="text"
+                  placeholder="goal title"
+                  autoFocus
+                />
               </div>
 
-              <div className={styles.subGoalRow}>
-                {allSubGoals.map((subgoal, index) => {
-                  return (
+              <div className={styles.field}>
+                <span className={styles.fieldLabel}>category</span>
+                <div
+                  className={styles.pillGroup}
+                  role="radiogroup"
+                  aria-label="category"
+                >
+                  {(
+                    [
+                      { value: "Work", label: "work", icon: <FaLaptopCode /> },
+                      {
+                        value: "Fitness",
+                        label: "fitness",
+                        icon: <IoMdFitness />,
+                      },
+                      {
+                        value: "Learning",
+                        label: "learning",
+                        icon: <LuBrain />,
+                      },
+                      {
+                        value: "Personal",
+                        label: "personal",
+                        icon: <CgProfile />,
+                      },
+                    ] as const
+                  ).map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      role="radio"
+                      aria-checked={goalCategory === opt.value}
+                      className={`${styles.pill} ${goalCategory === opt.value ? styles.pillActive : ""}`}
+                      onClick={() => {
+                        setGoalCategory(opt.value);
+                      }}
+                    >
+                      {opt.icon}
+                      <span>{opt.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className={styles.field}>
+                <span className={styles.fieldLabel}>progress</span>
+                <div
+                  className={styles.pillGroup}
+                  role="radiogroup"
+                  aria-label="progress"
+                >
+                  {(
+                    [
+                      {
+                        value: "not_started",
+                        label: "not started",
+                        dotClass: styles.pillDotPending,
+                      },
+                      {
+                        value: "in_progress",
+                        label: "in progress",
+                        dotClass: styles.pillDotOngoing,
+                      },
+                      {
+                        value: "completed",
+                        label: "completed",
+                        dotClass: styles.pillDotDone,
+                      },
+                    ] as const
+                  ).map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      role="radio"
+                      aria-checked={goalProgress === opt.value}
+                      className={`${styles.pill} ${goalProgress === opt.value ? styles.pillActive : ""}`}
+                      onClick={() => {
+                        setGoalProgress(opt.value);
+                      }}
+                    >
+                      <span className={`${styles.pillDot} ${opt.dotClass}`} />
+                      <span>{opt.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className={styles.field}>
+                <span className={styles.fieldLabel}>subgoals</span>
+                <div className={styles.subGoalsField}>
+                  {allSubGoals.map((subgoal, index) => (
                     <input
+                      key={subgoal.id}
                       className={styles.subGoalInput}
-                      placeholder="enter subgoal"
+                      placeholder={`subgoal ${index + 1}`}
                       value={subgoal.title}
                       onChange={(e) => {
                         handleSubGoalChange(e, index);
                       }}
                     />
-                  );
-                })}
+                  ))}
+                  <button
+                    onClick={handleAddSubGoal}
+                    type="button"
+                    className={`${styles.addSubGoalButton} ${allSubGoals.length >= 5 ? styles.addSubGoalButtonDisabled : ""}`}
+                    disabled={allSubGoals.length >= 5}
+                  >
+                    + add subgoal
+                  </button>
+                </div>
               </div>
 
               <div className={styles.modalButtons}>
-                <button
-                  onClick={handleAddSubGoal}
-                  type="button"
-                  className={`${styles.addSubGoalButton} ${allSubGoals.length >= 3 ? styles.addSubGoalButtonDisabled : ""}`}
-                  disabled={allSubGoals.length >= 3}
-                >
-                  add subgoals
-                </button>
-                <div>
-                  <button className={styles.submitButton} type="submit">
-                    {selectedGoal !== null ? "update goal" : "add goal"}
-                  </button>
+                {selectedGoal && (
                   <button
-                    className={styles.cancelButton}
+                    onClick={handleDelete}
+                    className={styles.deleteButton}
+                    type="button"
+                  >
+                    <FaRegTrashAlt />
+                    <span>delete</span>
+                  </button>
+                )}
+                <div className={styles.modalButtonsRight}>
+                  <button
+                    className={styles.secondaryButton}
                     type="button"
                     onClick={closeAndResetModal}
                   >
                     cancel
                   </button>
-                  {selectedGoal && (
-                    <button
-                      onClick={handleDelete}
-                      className={styles.deleteButton}
-                      type="button"
-                    >
-                      <FaRegTrashAlt />
-                    </button>
-                  )}
+                  <button className={styles.primaryButton} type="submit">
+                    {selectedGoal !== null ? "update" : "add goal"}
+                  </button>
                 </div>
               </div>
             </form>

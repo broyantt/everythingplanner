@@ -3,20 +3,20 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  row-gap: 10px;
-  padding: 10px;
+  row-gap: var(--space-3);
+  padding: var(--space-3);
 }
 
 .clockButtons {
   display: flex;
-  column-gap: 15px;
+  column-gap: var(--space-4);
   justify-content: center;
   align-items: center;
 }
 
 .clockTimerTop {
   display: flex;
-  column-gap: 20px;
+  column-gap: var(--space-5);
   justify-content: center;
   align-items: center;
 }
@@ -24,7 +24,7 @@
 .topButton {
   all: unset;
   cursor: pointer;
-  font-size: 12px;
+  font-size: var(--font-xs);
   display: flex;
   align-items: center;
   transition: color 0.3s ease;
@@ -44,8 +44,8 @@
 
 .circleContainer {
   border: 1px solid rgb(var(--color-foreground));
-  width: 16px;
-  height: 16px;
+  width: 1rem;
+  height: 1rem;
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -54,8 +54,8 @@
 
 .stopSquare {
   background-color: rgb(var(--color-foreground));
-  width: 6px;
-  height: 6px;
+  width: 0.375rem;
+  height: 0.375rem;
   opacity: 0;
   transform: scale(0);
   transition: all 0.25s linear;
@@ -69,9 +69,9 @@
 .counterContainer {
   display: flex;
   align-items: center;
-  column-gap: 12px;
-  width: 400px;
-  margin-bottom: 5px;
+  column-gap: var(--space-3);
+  width: 25rem;
+  margin-bottom: var(--space-1);
 }
 
 .todayStat {
@@ -85,7 +85,7 @@
 }
 
 .divider {
-  height: 12px;
+  height: 0.75rem;
   width: 1px;
   background-color: rgb(var(--color-muted));
   opacity: 0.6;

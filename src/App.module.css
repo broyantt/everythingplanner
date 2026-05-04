@@ -2,10 +2,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  max-width: 700px;
+  max-width: var(--width-content);
   margin: 0 auto;
   min-height: 100vh;
-  column-gap: 15px;
+  column-gap: var(--space-4);
 }
 
 .navbar {
@@ -13,36 +13,29 @@
   top: 2%;
   left: 0;
   right: 0;
-  max-width: 700px;
+  max-width: var(--width-content);
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background-color: var(--color-bg);
   border-bottom: 1.5px solid rgb(var(--color-muted));
-  opacity: 0.6;
   z-index: 100;
-  padding: 18px;
-  transition: opacity 0.8s ease;
+  padding: var(--space-4);
 }
 
-.goalLogo {
-  color: rgb(var(--color-foreground));
-  width: 15px;
-  height: 15px;
-  transition: color 0.3s ease;
-}
-
-.goalLogo:hover {
-  color: rgb(var(--color-muted));
-}
-
+.goalLogo,
 .calendarLogo {
   color: rgb(var(--color-foreground));
-  width: 15px;
-  height: 15px;
-  transition: color 0.3s ease;
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.6;
+  transition:
+    color 0.3s ease,
+    opacity 0.3s ease;
 }
 
+.goalLogo:hover,
 .calendarLogo:hover {
-  color: rgb(var(--color-muted));
+  opacity: 1;
 }

@@ -1,7 +1,7 @@
 .calendar {
-  width: 300px;
+  width: 18.75rem;
   border: 2px solid rgb(var(--color-muted));
-  border-radius: 15px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -12,18 +12,18 @@
   align-items: center;
 }
 
-.todoDotCompleted {
-  width: 5px;
-  height: 5px;
+.todoDotCompleted,
+.todoDotOngoing {
+  width: 0.3125rem;
+  height: 0.3125rem;
   border-radius: 50%;
-  background-color: #8ba888;
   margin-top: -2px;
 }
 
+.todoDotCompleted {
+  background-color: var(--color-accent);
+}
+
 .todoDotOngoing {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background-color: #a89f99;
-  margin-top: -2px;
+  background-color: var(--color-status-ongoing);
 }
