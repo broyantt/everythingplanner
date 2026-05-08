@@ -358,3 +358,29 @@
 .deleteButton:hover {
   background-color: rgba(191, 107, 90, 0.08);
 }
+
+.shake {
+  animation: shake 0.3s ease;
+  border-color: var(--color-shake);
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0px);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+  100% {
+    transform: translateX(0px);
+  }
+}

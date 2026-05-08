@@ -67,6 +67,8 @@ export default function GoalTracker() {
 
   const [allSubGoals, setAllSubGoals] = useState<SubGoal[]>([]);
 
+  const [isShaking, setIsShaking] = useState(false);
+
   const yearlyGoals = allGoals[year] || [];
 
   const yearlyWorkGoals = yearlyGoals.filter((goal) => {
@@ -205,6 +207,10 @@ export default function GoalTracker() {
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (goalTitle === "") {
+      setIsShaking(true);
+      return;
+    }
     let updatedGoals = {};
     if (selectedGoal) {
       const updatedYearlyGoals = allGoals[year].map((goal) => {
@@ -508,7 +514,13 @@ export default function GoalTracker() {
                   >
                     cancel
                   </button>
-                  <button className={styles.primaryButton} type="submit">
+                  <button
+                    className={`${styles.primaryButton} ${isShaking ? styles.shake : ""}`}
+                    onAnimationEnd={() => {
+                      setIsShaking(false);
+                    }}
+                    type="submit"
+                  >
                     {selectedGoal !== null ? "update" : "add goal"}
                   </button>
                 </div>
