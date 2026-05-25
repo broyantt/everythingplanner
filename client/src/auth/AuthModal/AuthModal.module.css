@@ -1,0 +1,18 @@
+.overlayModal {
+  background: rgb(0, 0, 0, 12%);
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  inset: 0;
+  z-index: 1000;
+}
+
+.modal {
+  width: min(35rem, 92vw);
+  background: var(--color-modal-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}

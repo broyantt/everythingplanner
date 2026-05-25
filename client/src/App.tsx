@@ -7,6 +7,7 @@ import { FaRegCalendarAlt } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { Routes, Route, Link } from "react-router-dom";
 import { IoLockClosedOutline } from "react-icons/io5";
+import AuthModal from "./auth/AuthModal/AuthModal";
 
 export interface Todo {
   text: string;
@@ -35,6 +36,8 @@ function App() {
     return saved ? JSON.parse(saved) : {};
   });
 
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+
   useEffect(() => {
     const newTodos = JSON.stringify(allTodos);
     localStorage.setItem("allTodos", newTodos);
@@ -47,6 +50,23 @@ function App() {
 
   return (
     <>
+      <div className={styles.authSection}>
+        <button
+          onClick={() => {
+            setIsAuthOpen(true);
+          }}
+          className={styles.authButton}
+        >
+          Login
+        </button>
+      </div>
+      {isAuthOpen && (
+        <AuthModal
+          onClose={() => {
+            setIsAuthOpen(false);
+          }}
+        />
+      )}
       <div className={styles.navbar}>
         <Link to="/goals">
           <IoLockClosedOutline className={styles.goalLogo} />
