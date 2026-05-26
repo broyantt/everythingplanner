@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { Routes, Route, Link } from "react-router-dom";
 import { IoLockClosedOutline } from "react-icons/io5";
 import AuthModal from "./auth/AuthModal/AuthModal";
+import { useAuth } from "./auth/AuthContext";
 
 export interface Todo {
   text: string;
@@ -37,6 +38,7 @@ function App() {
   });
 
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const { token, logout } = useAuth();
 
   useEffect(() => {
     const newTodos = JSON.stringify(allTodos);
@@ -51,14 +53,25 @@ function App() {
   return (
     <>
       <div className={styles.authSection}>
-        <button
-          onClick={() => {
-            setIsAuthOpen(true);
-          }}
-          className={styles.authButton}
-        >
-          Login
-        </button>
+        {token ? (
+          <button
+            onClick={() => {
+              logout();
+            }}
+            className={styles.authButton}
+          >
+            Logout
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              setIsAuthOpen(true);
+            }}
+            className={styles.authButton}
+          >
+            Login
+          </button>
+        )}
       </div>
       {isAuthOpen && (
         <AuthModal
