@@ -12,7 +12,8 @@ Having my todos, goals, and pomodoro sessions in one place makes planning feel m
 
 Beyond just being useful, this project also reinvigorated my joy for hands-on coding. Building it manually (0 vibe coding) helped me deeply understand the underlying mechanics of my code (e.g. state management, component architecture, data flow) instead of relying too heavily on AI to abstract those details away.
 
-Feel free to try [everythingplanner](https://everythingplanner.vercel.app/) — hopefully it helps you plan your days/years a little more intentionally too!
+It is currently undergoing some backend changes, production URL will be live soon.
+
 
 ## Core Features!
 
