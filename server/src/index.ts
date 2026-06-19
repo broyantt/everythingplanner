@@ -101,6 +101,15 @@ app.get("/sessions", authMiddleware, async (req, res) => {
   return res.json({ count: count });
 });
 
+app.get("/sessions/total", authMiddleware, async (req, res) => {
+  const result = await pool.query(
+    "SELECT SUM(count) AS total FROM sessions WHERE user_id = $1",
+    [req.userId],
+  );
+  const count = result.rows[0]?.total ?? 0;
+  return res.json({ count: count });
+});
+
 app.post("/sessions", authMiddleware, async (req, res) => {
   const { date, count } = req.body;
 

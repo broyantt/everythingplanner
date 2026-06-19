@@ -3,33 +3,49 @@ import { LuUndo2 } from "react-icons/lu";
 import { MdSwitchRight } from "react-icons/md";
 import styles from "./Pomodoro.module.css";
 import pomodoroSparkle from "../../assets/pomodoroSparkle.mp3";
+import {
+  loadAllSessions,
+  loadSessions,
+  saveSessions,
+} from "../../api/sessions";
 
 const DEFAULT_TIME_WORK = 3600;
 const DEFAULT_TIME_REST = 900;
 
 interface PomodoroProps {
-  allSessions: Record<string, number>;
-  onSessionChange: (allSessions: Record<string, number>) => void;
   currDate: string;
 }
 
-export default function Pomodoro({
-  allSessions,
-  onSessionChange,
-  currDate,
-}: PomodoroProps) {
+export default function Pomodoro({ currDate }: PomodoroProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [seconds, setSeconds] = useState(DEFAULT_TIME_WORK);
   const [mode, setMode] = useState<"Work" | "Rest">("Work");
-  const totalSessions = Object.values(allSessions).reduce((acc, curr) => {
-    return acc + curr;
-  }, 0);
+
+  const [todayCount, setTodayCount] = useState(0);
+  const [totalSessions, setTotalSessions] = useState(0);
+
+  useEffect(() => {
+    async function fetch() {
+      const count = await loadSessions(currDate);
+      const totalCount = await loadAllSessions();
+      setTodayCount(count);
+      setTotalSessions(totalCount);
+    }
+    fetch();
+  }, [currDate]);
 
   function formatTime(s: number) {
     const minutes = Math.floor(s / 60);
     const seconds = s % 60;
 
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  }
+
+  async function handleIncrementSession() {
+    const newCount = todayCount + 1;
+    setTodayCount(newCount);
+    setTotalSessions(totalSessions + 1);
+    await saveSessions(currDate, newCount);
   }
 
   useEffect(() => {
@@ -60,10 +76,7 @@ export default function Pomodoro({
       const audioDing = new Audio(pomodoroSparkle);
       audioDing.play();
       if (mode === "Work") {
-        onSessionChange({
-          ...allSessions,
-          [currDate]: (allSessions[currDate] || 0) + 1,
-        });
+        handleIncrementSession();
       }
       setMode(mode === "Work" ? "Rest" : "Work");
     }
@@ -77,9 +90,7 @@ export default function Pomodoro({
     <>
       <div className={styles.clockTimer}>
         <div className={styles.counterContainer}>
-          <span className={styles.todayStat}>
-            today: {allSessions[currDate] ? allSessions[currDate] : 0}
-          </span>
+          <span className={styles.todayStat}>today: {todayCount}</span>
           <span className={styles.divider}></span>
           <span className={styles.allTimeStat}>total: {totalSessions}</span>
         </div>

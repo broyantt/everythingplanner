@@ -4,7 +4,7 @@ import { apiFetch } from "../auth/api";
 export async function loadTodos(date: string): Promise<Todo[]> {
   const token = localStorage.getItem("authToken");
   if (token) {
-    const data = await apiFetch(`/todos?date=${date}`);
+    const data = await apiFetch<{ todos: Todo[] }>(`/todos?date=${date}`);
     return data.todos;
   } else {
     const raw = localStorage.getItem("allTodos");
@@ -16,7 +16,7 @@ export async function loadTodos(date: string): Promise<Todo[]> {
 export async function saveTodos(date: string, todos: Todo[]): Promise<void> {
   const token = localStorage.getItem("authToken");
   if (token) {
-    await apiFetch("/todos", {
+    await apiFetch<{ todos: Todo[] }>("/todos", {
       method: "POST",
       body: JSON.stringify({ date, todos }),
     });

@@ -1,25 +1,32 @@
 import styles from "./TodoCard.module.css";
-import { useState, type ChangeEvent } from "react";
+import { useState, useEffect, type ChangeEvent } from "react";
 import type { Todo } from "../../App";
 import { FaRegTrashAlt } from "react-icons/fa";
+import { loadTodos, saveTodos } from "../../api/todos";
 
 interface TodoCardProps {
   currDate: string;
-  allTodos: Record<string, Todo[]>;
-  onTodoChange: (allTodos: Record<string, Todo[]>) => void;
 }
 
-export default function TodoCard({
-  currDate,
-  allTodos,
-  onTodoChange,
-}: TodoCardProps) {
+export default function TodoCard({ currDate }: TodoCardProps) {
   const [inputText, setInputText] = useState("");
   const [isShaking, setIsShaking] = useState(false);
 
-  let currentTodos = allTodos[currDate] || [];
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [loading, setLoading] = useState(false);
+
   const [edittingIndex, setEdittingIndex] = useState<number>();
   const [todoInput, setTodoInput] = useState("");
+
+  useEffect(() => {
+    async function fetch() {
+      setLoading(true);
+      const result = await loadTodos(currDate);
+      setTodos(result);
+      setLoading(false);
+    }
+    fetch();
+  }, [currDate]);
 
   function handleInputChange(e: ChangeEvent<HTMLInputElement>) {
     setInputText(e.target.value);
@@ -29,34 +36,58 @@ export default function TodoCard({
     setTodoInput(e.target.value);
   }
 
-  function handleDeleteTodo(index: number) {
-    const updatedTodos = currentTodos.filter((_, i) => {
+  async function handleDeleteTodo(index: number) {
+    const updatedTodos = todos.filter((_, i) => {
       if (i === index) {
         return false;
       }
       return true;
     });
-    if (updatedTodos.length === 0) {
-      const { [currDate]: _, ...rest } = allTodos;
-      onTodoChange(rest);
-    } else {
-      onTodoChange({ ...allTodos, [currDate]: updatedTodos });
-    }
+    setTodos(updatedTodos);
+    await saveTodos(currDate, updatedTodos);
   }
 
-  function handleToggleTodo(index: number) {
-    const updatedTodos = currentTodos.map((todo, i) => {
+  async function handleToggleTodo(index: number) {
+    const updatedTodos = todos.map((todo, i) => {
       if (i === index) {
         return { ...todo, completed: !todo.completed };
       }
       return todo;
     });
-    onTodoChange({ ...allTodos, [currDate]: updatedTodos });
+    setTodos(updatedTodos);
+    await saveTodos(currDate, updatedTodos);
+  }
+
+  async function handleAddTodo() {
+    if (inputText === "") {
+      setIsShaking(true);
+      return;
+    }
+    const updatedTodos = [...todos, { text: inputText, completed: false }];
+    setTodos(updatedTodos);
+    await saveTodos(currDate, updatedTodos);
+    setInputText("");
+  }
+
+  async function handleEditTodoEnter() {
+    if (todoInput === "") {
+      setIsShaking(true);
+      return;
+    }
+    const updatedTodos = todos.map((todo, index) => {
+      if (index === edittingIndex) {
+        return { ...todo, text: todoInput };
+      }
+      return todo;
+    });
+    setTodos(updatedTodos);
+    await saveTodos(currDate, updatedTodos);
+    setEdittingIndex(undefined);
   }
 
   function handleEditTodo(index: number) {
     setEdittingIndex(index);
-    setTodoInput(currentTodos[index].text);
+    setTodoInput(todos[index].text);
   }
 
   return (
@@ -76,21 +107,12 @@ export default function TodoCard({
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                if (inputText === "") {
-                  setIsShaking(true);
-                  return;
-                }
-                currentTodos = [
-                  ...currentTodos,
-                  { text: inputText, completed: false },
-                ];
-                onTodoChange({ ...allTodos, [currDate]: currentTodos });
-                setInputText("");
+                handleAddTodo();
               }
             }}
           />
           <ul className={styles.todoList}>
-            {currentTodos.map((todo, index) => {
+            {todos.map((todo, index) => {
               return (
                 <li
                   onDoubleClick={() => {
@@ -117,23 +139,7 @@ export default function TodoCard({
                             return;
                           }
                           if (e.key === "Enter") {
-                            if (todoInput === "") {
-                              setIsShaking(true);
-                              return;
-                            }
-                            const updatedTodos = currentTodos.map(
-                              (todo, index) => {
-                                if (index === edittingIndex) {
-                                  return { ...todo, text: todoInput };
-                                }
-                                return todo;
-                              },
-                            );
-                            onTodoChange({
-                              ...allTodos,
-                              [currDate]: updatedTodos,
-                            });
-                            setEdittingIndex(undefined);
+                            handleEditTodoEnter();
                           }
                         }}
                       />
