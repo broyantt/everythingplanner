@@ -65,8 +65,8 @@ export default function TodoCard({ currDate }: TodoCardProps) {
     }
     const updatedTodos = [...todos, { text: inputText, completed: false }];
     setTodos(updatedTodos);
-    await saveTodos(currDate, updatedTodos);
     setInputText("");
+    await saveTodos(currDate, updatedTodos);
   }
 
   async function handleEditTodoEnter() {

@@ -4,11 +4,12 @@ import TodoCard from "./components/TodoCard/TodoCard";
 import Pomodoro from "./components/Pomodoro/Pomodoro";
 import GoalTracker from "./components/GoalTracker/GoalTracker";
 import { FaRegCalendarAlt } from "react-icons/fa";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Routes, Route, Link } from "react-router-dom";
 import { IoLockClosedOutline } from "react-icons/io5";
 import AuthModal from "./auth/AuthModal/AuthModal";
 import { useAuth } from "./auth/AuthContext";
+import { loadSummary } from "./api/todos";
 
 export interface Todo {
   text: string;
@@ -19,9 +20,20 @@ const TODAY_KEY = new Date().toLocaleDateString("en-CA");
 
 function App() {
   const [currDate, setCurrDate] = useState(TODAY_KEY);
+  const [todosSummary, setTodosSummary] = useState<
+    Record<string, "completed" | "ongoing">
+  >({});
 
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const { token, logout } = useAuth();
+
+  useEffect(() => {
+    async function fetch() {
+      const summary = await loadSummary();
+      setTodosSummary(summary);
+    }
+    fetch();
+  }, [currDate]);
 
   return (
     <>
@@ -68,7 +80,11 @@ function App() {
           element={
             <>
               <div className={styles.mainContainer}>
-                <Calendar currDate={currDate} onDateChange={setCurrDate} />
+                <Calendar
+                  currDate={currDate}
+                  onDateChange={setCurrDate}
+                  todosSummary={todosSummary}
+                />
                 <TodoCard currDate={currDate} />
               </div>
             </>

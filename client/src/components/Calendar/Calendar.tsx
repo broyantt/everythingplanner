@@ -1,37 +1,33 @@
 import { DatePicker } from "@douyinfe/semi-ui";
-import type { Todo } from "../../App";
 import styles from "./Calendar.module.css";
 
 interface CalendarProps {
   onDateChange: (date: string) => void;
   currDate: string;
-  allTodos: Record<string, Todo[]>;
+  todosSummary: Record<string, "completed" | "ongoing">;
 }
 
 export default function Calendar({
   onDateChange,
   currDate,
-  allTodos,
+  todosSummary,
 }: CalendarProps) {
   function renderDate(dayNumber?: number, fullDate?: string) {
     if (!fullDate) return dayNumber;
-    if (allTodos[fullDate]) {
-      const currTodos = allTodos[fullDate];
-      const allCompleted = currTodos.every((todo: Todo) => {
-        return todo.completed;
-      });
-      return (
-        <div className={styles.dateItemContainer}>
-          {dayNumber}
-          <span
-            className={
-              allCompleted ? styles.todoDotCompleted : styles.todoDotOngoing
-            }
-          />
-        </div>
-      );
-    }
-    return dayNumber;
+    const status = todosSummary[fullDate];
+    if (!status) return dayNumber;
+    return (
+      <div className={styles.dateItemContainer}>
+        {dayNumber}
+        <span
+          className={
+            status === "completed"
+              ? styles.todoDotCompleted
+              : styles.todoDotOngoing
+          }
+        />
+      </div>
+    );
   }
 
   return (

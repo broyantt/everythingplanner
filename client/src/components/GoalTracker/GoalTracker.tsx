@@ -8,6 +8,7 @@ import { LuBrain } from "react-icons/lu";
 import { CgProfile } from "react-icons/cg";
 import { FaRegTrashAlt } from "react-icons/fa";
 import GoalPane from "../GoalPane/GoalPane.tsx";
+import { loadGoals, saveGoals } from "../../api/goals.ts";
 
 export interface Goal {
   id: string;
@@ -25,37 +26,11 @@ export interface SubGoal {
 
 const SEED_YEAR = new Date().getFullYear();
 
-const SEED_GOALS: Record<number, Goal[]> = {
-  [SEED_YEAR]: [
-    {
-      id: "seed-work",
-      title: "placeholder: ship a side project",
-      category: "Work",
-      progress: "in_progress",
-      subgoals: [
-        { id: "seed-work-a", title: "deploy to production", done: true },
-        { id: "seed-work-b", title: "share with friends", done: false },
-      ],
-    },
-    {
-      id: "seed-learning",
-      title: "placeholder: finish a system design course",
-      category: "Learning",
-      progress: "in_progress",
-      subgoals: [
-        { id: "seed-learning-a", title: "watch all lectures", done: true },
-        { id: "seed-learning-b", title: "complete the capstone", done: false },
-      ],
-    },
-  ],
-};
-
 export default function GoalTracker() {
-  const [year, setYear] = useState(SEED_YEAR);
-
-  const [allGoals, setAllGoals] = useState<Record<number, Goal[]>>(() => {
-    const saved = localStorage.getItem("allGoals");
-    return saved ? JSON.parse(saved) : SEED_GOALS;
+  const [year, setYear] = useState<number>(SEED_YEAR);
+  const [years, setYears] = useState<number[]>(() => {
+    const raw = localStorage.getItem("goalYears");
+    return raw ? JSON.parse(raw) : [SEED_YEAR];
   });
 
   const [isModalOpen, setModalOpen] = useState(false);
@@ -69,7 +44,15 @@ export default function GoalTracker() {
 
   const [isShaking, setIsShaking] = useState(false);
 
-  const yearlyGoals = allGoals[year] || [];
+  const [yearlyGoals, setYearlyGoals] = useState<Goal[]>([]);
+
+  useEffect(() => {
+    async function fetch() {
+      const goals = await loadGoals(year);
+      setYearlyGoals(goals);
+    }
+    fetch();
+  }, [year]);
 
   const yearlyWorkGoals = yearlyGoals.filter((goal) => {
     if (goal.category === "Work") {
@@ -99,9 +82,7 @@ export default function GoalTracker() {
     return false;
   });
 
-  const sortedYears = Object.keys(allGoals)
-    .map(Number)
-    .sort((a, b) => b - a);
+  const sortedYears = [...years].sort((a, b) => b - a);
 
   const MAX_YEARS = 5;
 
@@ -109,41 +90,38 @@ export default function GoalTracker() {
     if (sortedYears.length >= MAX_YEARS) return;
     const nextYear =
       sortedYears.length === 0 ? new Date().getFullYear() : sortedYears[0] + 1;
-    if (allGoals[nextYear]) return;
-    setAllGoals({ ...allGoals, [nextYear]: [] });
+    if (years.includes(nextYear)) return;
+    const updatedYears = [...years, nextYear];
+    setYears(updatedYears);
+    localStorage.setItem("goalYears", JSON.stringify(updatedYears));
     setYear(nextYear);
   }
 
   function handleDeleteYear(yearToDelete: number) {
     if (yearToDelete === new Date().getFullYear()) return;
-
-    const remaining = { ...allGoals };
-    delete remaining[yearToDelete];
-    setAllGoals(remaining);
-
+    const updatedYears = years.filter((y) => {
+      return y !== yearToDelete;
+    });
+    setYears(updatedYears);
+    localStorage.setItem("goalYears", JSON.stringify(updatedYears));
     if (yearToDelete === year) {
-      const remainingYears = Object.keys(remaining)
-        .map(Number)
-        .sort((a, b) => b - a);
-      setYear(remainingYears[0] ?? new Date().getFullYear());
+      const remaining = [...updatedYears].sort((a, b) => b - a);
+      setYear(remaining[0] ?? new Date().getFullYear());
     }
   }
 
-  function handleDelete() {
-    if (selectedGoal) {
-      const updatedYearlyGoals = allGoals[year].filter((goal) => {
-        if (goal.id === selectedGoal.id) {
-          return false;
-        } else {
-          return true;
-        }
-      });
-      const updatedGoals = { ...allGoals, [year]: updatedYearlyGoals };
-      setAllGoals(updatedGoals);
-      closeAndResetModal();
-    } else {
-      return;
-    }
+  async function handleDelete() {
+    if (!selectedGoal) return;
+    const updatedYearlyGoals = yearlyGoals.filter((goal) => {
+      if (goal.id === selectedGoal.id) {
+        return false;
+      } else {
+        return true;
+      }
+    });
+    setYearlyGoals(updatedYearlyGoals);
+    await saveGoals(year, updatedYearlyGoals);
+    closeAndResetModal();
   }
 
   function handleAddSubGoal() {
@@ -158,9 +136,8 @@ export default function GoalTracker() {
     setAllSubGoals(updatedSubGoals);
   }
 
-  function handleCheckSubgoal(goalId: string, subgoalId: string) {
-    let updatedGoals = {};
-    const updatedYearlyGoals = allGoals[year].map((goal) => {
+  async function handleCheckSubgoal(goalId: string, subgoalId: string) {
+    const updatedYearlyGoals = yearlyGoals.map((goal) => {
       if (goal.id === goalId) {
         const updatedSubGoals = goal.subgoals.map((subgoal) => {
           if (subgoal.id === subgoalId) {
@@ -180,11 +157,9 @@ export default function GoalTracker() {
         return goal;
       }
     });
-    updatedGoals = {
-      ...allGoals,
-      [year]: updatedYearlyGoals,
-    };
-    setAllGoals(updatedGoals);
+
+    setYearlyGoals(updatedYearlyGoals);
+    await saveGoals(year, updatedYearlyGoals);
   }
 
   function handleSubGoalChange(
@@ -205,48 +180,41 @@ export default function GoalTracker() {
     setModalOpen(false);
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (goalTitle === "") {
       setIsShaking(true);
       return;
     }
-    let updatedGoals = {};
+    let updatedYearlyGoals: Goal[];
     if (selectedGoal) {
-      const updatedYearlyGoals = allGoals[year].map((goal) => {
+      updatedYearlyGoals = yearlyGoals.map((goal) => {
         if (goal.id === selectedGoal.id) {
           return {
             ...goal,
             title: goalTitle,
             category: goalCategory as Goal["category"],
-            progress: goalProgress,
+            progress: goalProgress as Goal["progress"],
             subgoals: allSubGoals,
           };
         } else {
           return goal;
         }
       });
-      updatedGoals = {
-        ...allGoals,
-        [year]: updatedYearlyGoals,
-      };
     } else {
-      updatedGoals = {
-        ...allGoals,
-        [year]: [
-          ...(allGoals[year] || []),
-          {
-            id: `goal-${Date.now()}`,
-            title: goalTitle,
-            category: goalCategory as Goal["category"],
-            progress: goalProgress,
-            subgoals: allSubGoals,
-          },
-        ],
-      };
+      updatedYearlyGoals = [
+        ...yearlyGoals,
+        {
+          id: `goal-${Date.now()}`,
+          title: goalTitle,
+          category: goalCategory as Goal["category"],
+          progress: goalProgress as Goal["progress"],
+          subgoals: allSubGoals,
+        },
+      ];
     }
-
-    setAllGoals(updatedGoals);
+    setYearlyGoals(updatedYearlyGoals);
+    await saveGoals(year, updatedYearlyGoals);
     closeAndResetModal();
   }
 
@@ -258,11 +226,6 @@ export default function GoalTracker() {
     setAllSubGoals(goal.subgoals);
     setModalOpen(true);
   }
-
-  useEffect(() => {
-    const allGoalsParsed = JSON.stringify(allGoals);
-    localStorage.setItem("allGoals", allGoalsParsed);
-  }, [allGoals]);
 
   return (
     <>

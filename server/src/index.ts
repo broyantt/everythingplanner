@@ -175,6 +175,18 @@ app.post("/todos", authMiddleware, async (req, res) => {
   }
 });
 
+app.get("/todos/summary", authMiddleware, async (req, res) => {
+  const result = await pool.query(
+    "SELECT TO_CHAR(date, 'YYYY-MM-DD') as date, COUNT(*) as total, SUM(CASE WHEN completed THEN 1 ELSE 0 END) as done FROM todos WHERE user_id=$1 GROUP BY date",
+    [req.userId],
+  );
+  const summary: Record<string, "completed" | "ongoing"> = {};
+  for (const row of result.rows) {
+    summary[row.date] = row.total == row.done ? "completed" : "ongoing";
+  }
+  return res.json({ summary: summary });
+});
+
 app.get("/goals", authMiddleware, async (req, res) => {
   const yearStr = req.query.year;
   if (typeof yearStr !== "string") {

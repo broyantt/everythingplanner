@@ -27,3 +27,28 @@ export async function saveTodos(date: string, todos: Todo[]): Promise<void> {
     localStorage.setItem("allTodos", JSON.stringify(allTodos));
   }
 }
+
+export async function loadSummary() {
+  const token = localStorage.getItem("authToken");
+  if (token) {
+    const result = await apiFetch<{
+      summary: Record<string, "completed" | "ongoing">;
+    }>("/todos/summary");
+    return result.summary;
+  } else {
+    const raw = localStorage.getItem("allTodos");
+    const allTodos: Record<string, { text: string; completed: boolean }[]> = raw
+      ? JSON.parse(raw)
+      : {};
+    const summary: Record<string, "completed" | "ongoing"> = {};
+    for (const [date, todos] of Object.entries(allTodos)) {
+      if (todos.length === 0) continue;
+      summary[date] = todos.every((t) => {
+        return t.completed;
+      })
+        ? "completed"
+        : "ongoing";
+    }
+    return summary;
+  }
+}
